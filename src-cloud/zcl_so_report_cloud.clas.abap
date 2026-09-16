@@ -37,6 +37,13 @@ CLASS zcl_so_report_cloud DEFINITION
       RETURNING
         VALUE(rv_total) TYPE zso_item-netwr.
 
+    "! Counts how many distinct sales orders appear in the result.
+    METHODS count_orders
+      IMPORTING
+        it_orders       TYPE ty_orders
+      RETURNING
+        VALUE(rv_count) TYPE i.
+
   PRIVATE SECTION.
 
     CONSTANTS c_status_open TYPE zso_header-status VALUE 'O'.
@@ -66,6 +73,7 @@ CLASS zcl_so_report_cloud IMPLEMENTATION.
     lv_total = calculate_total( lt_orders ).
 
     out->write( |Rows        : { lines( lt_orders ) }| ).
+    out->write( |Orders      : { count_orders( lt_orders ) }| ).
     out->write( |Total value : { lv_total } INR| ).
 
   ENDMETHOD.
@@ -106,6 +114,24 @@ CLASS zcl_so_report_cloud IMPLEMENTATION.
     LOOP AT it_orders INTO ls_order.
       rv_total = rv_total + ls_order-NetValue.
     ENDLOOP.
+
+  ENDMETHOD.
+
+
+  METHOD count_orders.
+
+    DATA lt_orders TYPE STANDARD TABLE OF zso_header-vbeln WITH DEFAULT KEY.
+    DATA ls_order  TYPE zi_salesorderitem.
+
+    LOOP AT it_orders INTO ls_order.
+      APPEND ls_order-SalesOrder TO lt_orders.
+    ENDLOOP.
+
+    " Remove duplicates so each order is counted once.
+    SORT lt_orders.
+    DELETE ADJACENT DUPLICATES FROM lt_orders.
+
+    rv_count = lines( lt_orders ).
 
   ENDMETHOD.
 

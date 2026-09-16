@@ -31,6 +31,7 @@ is the point — the ABAP fundamentals transfer, the UI layer does not.
 | `ZI_SalesOrderItem` | `zi_salesorderitem.ddls.asddls` | CDS view joining the two |
 | `ZCL_SO_DATA_GEN_CLOUD` | `zcl_so_data_gen_cloud.clas.abap` | Creates demo rows |
 | `ZCL_SO_REPORT_CLOUD` | `zcl_so_report_cloud.clas.abap` | Reads and prints the report |
+| `ltcl_so_report_cloud` | `zcl_so_report_cloud.clas.testclasses.abap` | Four ABAP Unit tests |
 
 ## Running it
 
@@ -46,10 +47,15 @@ Once your ABAP Cloud Project is connected in Eclipse:
    Definition**. Name it `ZI_SalesOrderItem`, choose the *Define View
    Entity* template, paste in `zi_salesorderitem.ddls.asddls`, activate.
 4. **Create the two classes.** **New → ABAP Class** for each, paste the
-   source, activate.
+   source, activate. For `ZCL_SO_REPORT_CLOUD`, also open **Test Classes**
+   (the tab at the bottom of the class editor) and paste
+   `zcl_so_report_cloud.clas.testclasses.abap` in there.
 5. **Run `ZCL_SO_DATA_GEN_CLOUD`** with **F9**. The console should report
    3 header rows and 4 item rows.
 6. **Run `ZCL_SO_REPORT_CLOUD`** with **F9**.
+7. **Run the unit tests.** Right-click `ZCL_SO_REPORT_CLOUD` →
+   **Run As → ABAP Unit Test** (`Ctrl+Shift+F10`). All four should pass;
+   they need no data, so they also pass before step 5.
 
 Expected console output:
 
@@ -58,6 +64,7 @@ Sales Order Report - open orders
 ================================
 <table of 3 rows>
 Rows        : 3
+Orders      : 2
 Total value : 123000.00 INR
 ```
 
