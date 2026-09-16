@@ -1,3 +1,12 @@
 deps/
 node_modules/
 *.log
+
+# Never commit BTP / SAP credentials
+*key*.json
+*service*key*.json
+*-key.json
+default-key.json
+default_key.json
+.env
+*.pem
