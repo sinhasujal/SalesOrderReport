@@ -1,0 +1,41 @@
+{
+  "global": {
+    "files": "/src/**/*.*"
+  },
+  "dependencies": [
+    {
+      "url": "https://github.com/abaplint/deps",
+      "folder": "/deps",
+      "files": "/src/**/*.*"
+    }
+  ],
+  "syntax": {
+    "version": "v755",
+    "errorNamespace": "^(Z|Y|LTCL|LCL)"
+  },
+  "rules": {
+    "check_syntax": true,
+    "parser_error": true,
+    "unknown_types": true,
+    "obsolete_statement": {
+      "clear": false
+    },
+    "7bit_ascii": true,
+    "line_length": { "length": 120 },
+    "sequential_blank": { "lines": 4 },
+    "space_before_colon": true,
+    "contains_tab": true,
+    "keyword_case": { "style": "upper" },
+    "start_at_tab": false,
+    "check_comments": false,
+    "prefer_inline": false,
+    "prefer_returning_to_exporting": false,
+    "avoid_use": {
+      "define": true,
+      "testSeams": true,
+      "statics": true,
+      "defaultKey": false,
+      "break": true
+    }
+  }
+}
