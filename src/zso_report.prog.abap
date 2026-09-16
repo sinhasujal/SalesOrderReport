@@ -5,8 +5,9 @@
 *&           optional filter for open orders only.
 *&
 *& Author  : Sujal Sinha
-*& Concepts: Selection screen, Open SQL (INNER JOIN), Internal Table,
-*&           Work Area, Modularization (FORM/PERFORM), ALV output.
+*& Concepts: Selection screen and its validation, authorization check,
+*&           Open SQL (INNER JOIN), Internal Table, Work Area,
+*&           Modularization (FORM/PERFORM), ALV output.
 *&
 *& Note    : The tables ZSO_HEADER / ZSO_ITEM are custom (Z) tables
 *&           modelled on the standard SAP tables VBAK / VBAP so that
@@ -39,12 +40,77 @@ PARAMETERS p_open AS CHECKBOX DEFAULT 'X'.      " Only open orders
 SELECTION-SCREEN END OF BLOCK b2.
 
 *&---------------------------------------------------------------------*
+*& Selection screen validation
+*&---------------------------------------------------------------------*
+*& AT SELECTION-SCREEN runs after the user presses F8, but before
+*& START-OF-SELECTION. A type 'E' message raised here returns the user
+*& to the screen with the offending field ready for correction, instead
+*& of running the report and showing an empty list.
+*&---------------------------------------------------------------------*
+AT SELECTION-SCREEN.
+
+  PERFORM validate_selection.
+
+*&---------------------------------------------------------------------*
 *& Main processing block
 *&---------------------------------------------------------------------*
 START-OF-SELECTION.
 
+  PERFORM check_authority.
   PERFORM get_data.
   PERFORM display_data.
+
+*&---------------------------------------------------------------------*
+*& Form VALIDATE_SELECTION
+*&---------------------------------------------------------------------*
+*& Checks the created-on range the user typed in.
+*&
+*& SELECT-OPTIONS does not enforce that the "to" value is later than the
+*& "from" value. A reversed range is accepted and simply returns no
+*& rows, which reads as a broken report rather than a typo in the input.
+*&---------------------------------------------------------------------*
+FORM validate_selection.
+
+  DATA ls_erdat LIKE LINE OF s_erdat.
+
+  LOOP AT s_erdat INTO ls_erdat.
+
+    IF ls_erdat-high IS NOT INITIAL AND ls_erdat-high < ls_erdat-low.
+      MESSAGE 'Created on: the to-date is earlier than the from-date'
+              TYPE 'E'.
+    ENDIF.
+
+    IF ls_erdat-low > sy-datum.
+      MESSAGE 'Created on: the from-date is in the future' TYPE 'E'.
+    ENDIF.
+
+  ENDLOOP.
+
+ENDFORM.
+
+*&---------------------------------------------------------------------*
+*& Form CHECK_AUTHORITY
+*&---------------------------------------------------------------------*
+*& A report that reads business data should check that the user is
+*& allowed to see it, before it reads anything.
+*&
+*& S_TABU_DIS is the standard authorization object for table display.
+*& '&NC&' is the authorization group used for tables that have not been
+*& assigned one, which is the case for ZSO_HEADER and ZSO_ITEM. Activity
+*& '03' is display.
+*&---------------------------------------------------------------------*
+FORM check_authority.
+
+  AUTHORITY-CHECK OBJECT 'S_TABU_DIS'
+    ID 'DICBERCLS' FIELD '&NC&'
+    ID 'ACTVT'     FIELD '03'.
+
+  IF sy-subrc <> 0.
+    MESSAGE 'You are not authorised to display sales order data'
+            TYPE 'E'.
+  ENDIF.
+
+ENDFORM.
 
 *&---------------------------------------------------------------------*
 *& Form GET_DATA

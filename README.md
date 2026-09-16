@@ -76,6 +76,8 @@ The field names are kept identical to the SAP originals.
 |---|---|
 | **Data Dictionary** | `zso_header.tabl.xml`, `zso_item.tabl.xml` — tables, data types, `CURR`/`QUAN` reference fields |
 | **Selection screen** | `zso_report.prog.abap` — `SELECT-OPTIONS`, `PARAMETERS`, screen blocks |
+| **Screen validation** | `zso_report.prog.abap` → `AT SELECTION-SCREEN` / `FORM validate_selection` — rejects a reversed or future date range |
+| **Authorization check** | `zso_report.prog.abap` → `FORM check_authority` — `AUTHORITY-CHECK` on `S_TABU_DIS` before any data is read |
 | **Open SQL** | `zcl_so_report.clas.abap` → `get_orders( )` — `INNER JOIN`, `IN` against ranges, `INTO TABLE` |
 | **Internal table** | `gt_output` in the report; `lt_header` / `lt_item` in the data generator |
 | **Work area** | `ls_output` in `calculate_total( )`; `ls_header` / `ls_item` in the generator |

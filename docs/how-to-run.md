@@ -66,6 +66,21 @@ For each of `ZSO_HEADER` and `ZSO_ITEM`:
 - `SE38` → `ZSO_DATA_GEN` → Execute (F8). It writes 3 orders / 4 items.
 - `SE38` → `ZSO_REPORT` → Execute (F8).
 
+#### If the report says "You are not authorised"
+
+`ZSO_REPORT` runs an `AUTHORITY-CHECK` on `S_TABU_DIS` (authorization
+group `&NC&`, activity `03`) before reading anything. A developer user on
+a training system normally has this. If yours does not, either have the
+role extended in `PFCG`, or comment out the `PERFORM check_authority.`
+line while you test — but leave the `FORM` in place, because the check is
+one of the things the code is there to demonstrate.
+
+#### Validation on the selection screen
+
+Entering a created-on range whose "to" date is before the "from" date, or
+a "from" date in the future, is rejected before the report runs. That is
+the `AT SELECTION-SCREEN` event block.
+
 ---
 
 ## Running the unit tests
