@@ -13,6 +13,24 @@ something large.
 
 ---
 
+## Two variants
+
+The same report, built twice for the two worlds of ABAP:
+
+| Folder | Targets | Run it with |
+|---|---|---|
+| `src/` | **Classic on-premise ABAP** - ECC, S/4HANA | `SE38` / `SE11` / `SE24` |
+| `src-cloud/` | **ABAP Cloud** - SAP BTP ABAP Environment | Eclipse ADT, F9 |
+
+The fundamentals are identical - internal tables, work areas, Open SQL,
+modularization, classes. What differs is the UI and data-access layer:
+ABAP Cloud has no SAP GUI, so there is no selection screen and no ALV
+grid, and data is read through a CDS view rather than by joining tables
+directly. See [docs/abap-cloud.md](docs/abap-cloud.md) for the full
+comparison.
+
+---
+
 ## What it does
 
 `ZSO_REPORT` shows sales order line items with their header data:
