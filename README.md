@@ -9,7 +9,7 @@ building blocks — Data Dictionary, Internal Tables, Work Areas, Open SQL,
 Modularization, basic OO ABAP and ABAP Unit — rather than to build
 something large.
 
-![abaplint](https://github.com/sinhasujal/SAP-Based-Sales-Order-Report/actions/workflows/abaplint.yml/badge.svg)
+![abaplint](https://github.com/sinhasujal/SalesOrderReport/actions/workflows/abaplint.yml/badge.svg)
 
 ---
 
