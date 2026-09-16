@@ -1,4 +1,4 @@
-# Sales Order Report — SAP ABAP
+# Sales Order Report
 
 A small ABAP training project: a classic report that reads sales order
 headers and items from the database, filters them from a selection
