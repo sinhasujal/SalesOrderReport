@@ -82,27 +82,33 @@ CLASS zcl_so_report_cloud IMPLEMENTATION.
   METHOD get_orders.
 
     " A host variable cannot be tested with IS INITIAL inside Open SQL,
-    " so the empty-customer case is handled with a plain IF instead.
-    IF iv_customer IS INITIAL.
+    " but a range can: a range with no rows imposes no restriction. Turning
+    " both optional filters into ranges collapses what used to be two
+    " SELECTs into one, and lets the database apply the status filter
+    " instead of deleting rows from the internal table afterwards.
+    DATA lt_customer TYPE RANGE OF zso_header-kunnr.
+    DATA lt_status   TYPE RANGE OF zso_header-status.
 
-      SELECT *
-        FROM zi_salesorderitem
-        ORDER BY SalesOrder, SalesOrderItem
-        INTO TABLE @rt_orders.
-
-    ELSE.
-
-      SELECT *
-        FROM zi_salesorderitem
-        WHERE Customer = @iv_customer
-        ORDER BY SalesOrder, SalesOrderItem
-        INTO TABLE @rt_orders.
-
+    IF iv_customer IS NOT INITIAL.
+      lt_customer = VALUE #( ( sign   = 'I'
+                               option = 'EQ'
+                               low    = iv_customer ) ).
     ENDIF.
 
     IF iv_only_open = abap_true.
-      DELETE rt_orders WHERE OrderStatus <> c_status_open.
+      lt_status = VALUE #( ( sign   = 'I'
+                             option = 'EQ'
+                             low    = c_status_open ) ).
     ENDIF.
+
+    " SELECT * is deliberate here: RT_ORDERS is typed as the CDS view
+    " itself, so every column is used by the caller.
+    SELECT *
+      FROM zi_salesorderitem
+      WHERE Customer    IN @lt_customer
+        AND OrderStatus IN @lt_status
+      ORDER BY SalesOrder, SalesOrderItem
+      INTO TABLE @rt_orders.
 
   ENDMETHOD.
 

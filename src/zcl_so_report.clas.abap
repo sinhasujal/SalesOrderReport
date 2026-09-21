@@ -20,6 +20,10 @@ CLASS zcl_so_report DEFINITION
     TYPES ty_kunnr_range TYPE RANGE OF zso_header-kunnr.
     TYPES ty_erdat_range TYPE RANGE OF zso_header-erdat.
 
+    " Not filled from the selection screen - built inside GET_ORDERS( )
+    " so the open-orders filter can be pushed into the WHERE clause.
+    TYPES ty_status_range TYPE RANGE OF zso_header-status.
+
     " One row of the report output (header + item fields joined)
     TYPES: BEGIN OF ty_output,
              vbeln  TYPE zso_header-vbeln,
@@ -80,25 +84,33 @@ CLASS zcl_so_report IMPLEMENTATION.
 
   METHOD get_orders.
 
+    " The "open orders only" checkbox is expressed as a range rather than
+    " as a separate condition. A range with no rows imposes no restriction,
+    " so the unticked case needs no second SELECT.
+    DATA lt_status TYPE ty_status_range.
+
+    IF iv_only_open = abap_true.
+      lt_status = VALUE #( ( sign   = 'I'
+                             option = 'EQ'
+                             low    = c_status_open ) ).
+    ENDIF.
+
     " Open SQL: join the header table to the item table on the order
-    " number, and apply the selection-screen ranges with IN.
+    " number, and apply every filter in the WHERE clause so the database
+    " returns only the rows the report will actually display. Sorting is
+    " pushed down with ORDER BY for the same reason.
     SELECT h~vbeln, h~kunnr, h~erdat, h~status,
            i~posnr, i~matnr, i~arktx, i~kwmeng, i~netwr,
            h~waerk
       FROM zso_header AS h
       INNER JOIN zso_item AS i
         ON i~vbeln = h~vbeln
-      WHERE h~vbeln IN @it_vbeln
-        AND h~kunnr IN @it_kunnr
-        AND h~erdat IN @it_erdat
+      WHERE h~vbeln  IN @it_vbeln
+        AND h~kunnr  IN @it_kunnr
+        AND h~erdat  IN @it_erdat
+        AND h~status IN @lt_status
+      ORDER BY h~vbeln, i~posnr
       INTO TABLE @rt_output.
-
-    " Apply the "open orders only" checkbox on the internal table.
-    IF iv_only_open = abap_true.
-      DELETE rt_output WHERE status <> c_status_open.
-    ENDIF.
-
-    SORT rt_output BY vbeln ASCENDING posnr ASCENDING.
 
   ENDMETHOD.
 
