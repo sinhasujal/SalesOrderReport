@@ -25,10 +25,11 @@ CLASS ltcl_so_report DEFINITION FINAL FOR TESTING
       RETURNING
         VALUE(rs_row) TYPE zcl_so_report=>ty_output.
 
-    METHODS total_of_three_rows   FOR TESTING.
-    METHODS total_of_empty_table  FOR TESTING.
-    METHODS count_distinct_orders FOR TESTING.
-    METHODS count_of_empty_table  FOR TESTING.
+    METHODS total_of_three_rows     FOR TESTING.
+    METHODS total_of_empty_table    FOR TESTING.
+    METHODS count_distinct_orders   FOR TESTING.
+    METHODS count_ignores_row_order FOR TESTING.
+    METHODS count_of_empty_table    FOR TESTING.
 
 ENDCLASS.
 
@@ -98,6 +99,30 @@ CLASS ltcl_so_report IMPLEMENTATION.
       act = lv_count
       exp = 2
       msg = 'Three item rows across two orders should count as 2' ).
+
+  ENDMETHOD.
+
+
+  METHOD count_ignores_row_order.
+
+    DATA lt_rows  TYPE zcl_so_report=>ty_output_tab.
+    DATA lv_count TYPE i.
+
+    " The rows for order 1 are deliberately NOT adjacent. COUNT_ORDERS( )
+    " uses DELETE ADJACENT DUPLICATES, which only compares each row with
+    " the one before it, so it relies on the SORT that precedes it. Remove
+    " that SORT and this test returns 3 instead of 2 - which the test above
+    " would not catch, because it feeds the rows already grouped.
+    APPEND build_row( iv_vbeln = '0000000001' iv_netwr = '100.00' ) TO lt_rows.
+    APPEND build_row( iv_vbeln = '0000000002' iv_netwr = '150.50' ) TO lt_rows.
+    APPEND build_row( iv_vbeln = '0000000001' iv_netwr = '99.50'  ) TO lt_rows.
+
+    lv_count = mo_cut->count_orders( lt_rows ).
+
+    cl_abap_unit_assert=>assert_equals(
+      act = lv_count
+      exp = 2
+      msg = 'Distinct count must not depend on the order of the input rows' ).
 
   ENDMETHOD.
 
